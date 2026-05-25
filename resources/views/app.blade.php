@@ -73,11 +73,11 @@
                    class="px-3 py-1.5 rounded-md text-sm {{ request()->routeIs('modules.*') ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5' }} transition">
                     Library
                 </a>
-                <a href="{{ route('dashboard.index') }}"
+                <a href="{{ route('dashboard') }}"
                    class="px-3 py-1.5 rounded-md text-sm {{ request()->routeIs('dashboard.*') ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5' }} transition">
                     Word Bank
                 </a>
-                <a href="{{ isset($module) ? route('quiz.index', ['module_id' => $module->id]) : '#' }}"
+                <a href="{{ url('/quiz') }}"
                    class="px-3 py-1.5 rounded-md text-sm {{ request()->routeIs('quiz.*') ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5' }} transition">
                     Quiz
                 </a>

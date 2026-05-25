@@ -15,11 +15,11 @@
         </div>
         <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-xl px-4 py-2 text-center sm:text-right">
             <span class="text-[10px] uppercase font-bold text-indigo-300 block tracking-wider">Total Saved Items</span>
-            <span class="text-2xl font-black text-indigo-400">{{ $totalWordsCount }}</span>
+            <span class="text-2xl font-black text-indigo-400">{{ $savedWords->count() }}</span>
         </div>
     </div>
 
-    @if($modules->isEmpty() || $totalWordsCount === 0)
+    @if($modules->isEmpty() || $savedWords->count() === 0)
         <div class="bg-slate-900 border border-white/10 rounded-2xl p-12 text-center max-w-xl mx-auto">
             <span class="text-4xl">🍃</span>
             <h3 class="text-base font-bold text-slate-200 mt-4">Word Bank Is Empty</h3>

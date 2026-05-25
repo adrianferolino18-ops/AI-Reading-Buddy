@@ -87,6 +87,16 @@
                                         Module #<?php echo e($module->id); ?>
 
                                     </span>
+                                    
+                                    
+                                    <form action="<?php echo e(route('modules.destroy', $module->id)); ?>" method="POST" 
+                                          onsubmit="return confirm('Are you sure you want to permanently delete this reading room? All saved words inside it will be cleared.');">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
+                                        <button type="submit" class="text-slate-500 hover:text-rose-400 text-[10px] font-medium px-2 py-0.5 rounded transition bg-white/5 hover:bg-rose-500/10">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
                                 </div>
                                 <h3 class="text-base font-bold text-slate-200 group-hover:text-indigo-400 transition mb-2 tracking-tight">
                                     <?php echo e($module->title); ?>

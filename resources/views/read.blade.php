@@ -4,14 +4,14 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-8" x-data="readingWorkspaceEngine()">
-    
+
     <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-white/5 gap-4">
         <div>
             <h1 class="text-2xl font-extrabold text-white mt-1 tracking-tight">{{ $module->title }}</h1>
         </div>
-        
+
         <div class="flex items-center gap-3">
-            <a href="{{ route('quiz.index', ['module_id' => $module->id]) }}" 
+            <a href="{{ route('quiz.index', ['module_id' => $module->id]) }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-md shadow-indigo-600/10 flex items-center gap-2">
                 🧠 Take Module #{{ $module->id }} Quiz ➔
             </a>
@@ -22,18 +22,18 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative">
-        
+
         <div class="lg:col-span-2 bg-slate-900/40 border border-white/10 rounded-2xl p-8 shadow-sm relative">
             <div class="text-xs font-semibold text-slate-500 mb-4 tracking-wider uppercase flex items-center gap-2 select-none">
                 💡 Tip: Highlight any keyword vocabulary text to query dictionary summaries instantly.
             </div>
-            
+
             <div class="reading-body text-slate-300 leading-relaxed font-serif text-lg tracking-wide space-y-4 whitespace-pre-line"
                  @mouseup="handleTextHighlightSelection($event)">
                 {{ $module->body_text }}
             </div>
 
-            <button x-show="showLookUpButton" 
+            <button x-show="showLookUpButton"
                     x-cloak
                     :style="`position: absolute; left: ${btnX}px; top: ${btnY}px;`"
                     @mousedown.prevent="executeDictionaryLookup()"
@@ -43,12 +43,12 @@
         </div>
 
         <div class="space-y-6 lg:sticky lg:top-20">
-            
+
             <div class="bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-md">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 pb-2 border-b border-white/5 flex items-center gap-2 select-none">
                     💡 Interactive Desk Guide
                 </h3>
-                
+
                 <div x-show="!selectedWord && !isLoading" class="text-center py-8 text-slate-500 text-xs">
                     Highlight a word and click "Look Up" to display definitions here.
                 </div>
@@ -69,7 +69,7 @@
                         <p class="text-xs text-slate-200 leading-relaxed font-medium" :class="isError ? 'text-rose-400 font-semibold' : ''" x-text="definition"></p>
                     </div>
 
-                    <div class="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                    <div x-show="!isError" class="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10" x-cloak>
                         <span class="text-[9px] font-bold text-indigo-300 uppercase tracking-wider block mb-0.5">Auto-Save Audit</span>
                         <p class="text-[10px] text-slate-400 leading-normal">This translation pair pattern has been written directly to your Word Bank memory inventory cards.</p>
                     </div>
@@ -78,12 +78,16 @@
 
             <div class="bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-md">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 pb-2 border-b border-white/5 select-none">
-                    📚 Module Vocabulary Repository ({{ $module->savedWords->count() }})
+                    📚 Module Vocabulary Repository (<span x-text="wordCount"></span>)
                 </h3>
-                @if($module->savedWords->isEmpty())
+
+                <div x-show="wordCount === 0 && recentWords.length === 0" class="text-center">
                     <p class="text-xs text-slate-500 text-center py-4 italic">No definitions written yet.</p>
-                @else
-                    <div class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                </div>
+
+                {{-- Server-rendered existing words (visible on load) --}}
+                @if($module->savedWords->isNotEmpty())
+                    <div class="max-h-60 overflow-y-auto space-y-2 pr-1" id="server-word-list">
                         @foreach($module->savedWords as $wordItem)
                             <div class="p-2.5 bg-slate-950/40 rounded-xl border border-white/5 flex flex-col gap-1">
                                 <span class="text-xs font-bold text-indigo-300">{{ $wordItem->word }}</span>
@@ -92,6 +96,16 @@
                         @endforeach
                     </div>
                 @endif
+
+                {{-- Alpine-rendered words added during this session --}}
+                <div class="mt-2 space-y-2 pr-1" x-show="recentWords.length > 0">
+                    <template x-for="(entry, index) in recentWords" :key="index">
+                        <div class="p-2.5 bg-slate-950/40 rounded-xl border border-indigo-500/10 flex flex-col gap-1">
+                            <span class="text-xs font-bold text-indigo-300" x-text="entry.word"></span>
+                            <p class="text-[11px] text-slate-400 line-clamp-2 leading-normal" x-text="entry.definition"></p>
+                        </div>
+                    </template>
+                </div>
             </div>
 
         </div>
@@ -111,20 +125,20 @@
             btnX: 0,
             btnY: 0,
             activeContext: '',
+            wordCount: {{ $module->savedWords->count() }},
+            recentWords: [],
 
             handleTextHighlightSelection(event) {
                 const selection = window.getSelection();
                 const activeSelectionText = selection.toString().trim();
-                
-                // Track clean word matches, skip spaces or multi-line paragraphs
+
                 if (!activeSelectionText || activeSelectionText.length < 2 || /\s/.test(activeSelectionText)) {
                     this.showLookUpButton = false;
                     return;
                 }
 
                 this.selectedWord = activeSelectionText;
-                
-                // Pull a sanitized text boundary context block around the choice
+
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
                     const containerNode = range.startContainer.parentNode;
@@ -147,30 +161,57 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Accept": "application/json",
                         "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
                         word: this.selectedWord,
-                        module_id: "{{ $module->id }}",
+                        module_id: Number({{ $module->id }}),
                         context: this.activeContext
                     })
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network payload rejection');
-                    return response.json();
+                .then(async response => {
+                    const contentType = response.headers.get('Content-Type') || '';
+                    let data;
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            data = await response.json();
+                        } catch (parseError) {
+                            throw new Error('Backend returned invalid JSON.');
+                        }
+                    } else {
+                        const text = await response.text();
+                        throw new Error(text || 'Server returned an invalid response.');
+                    }
+
+                    if (response.status === 401) {
+                        throw new Error('You must be logged in to look up words.');
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Server request failed.');
+                    }
+
+                    return data;
                 })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success && typeof data.definition === 'string' && data.definition.length > 0) {
                         this.definition = data.definition;
+                        // Increment the live counter and append to the session word list
+                        if (!this.recentWords.some(e => e.word === this.selectedWord)) {
+                            this.recentWords.push({ word: this.selectedWord, definition: data.definition });
+                        }
+                        this.wordCount = {{ $module->savedWords->count() }} + this.recentWords.length;
                     } else {
                         this.isError = true;
-                        this.definition = data.message || "Unable to link dictionary properties.";
+                        this.definition = data.message || data.definition || "Gemini engine returned an empty result.";
                     }
                 })
                 .catch(error => {
                     console.error("Lookup Failure Trace:", error);
                     this.isError = true;
-                    this.definition = "Unable to link dictionary properties.";
+                    this.definition = error.message || "An unexpected error occurred during lookup.";
                 })
                 .finally(() => {
                     this.isLoading = false;

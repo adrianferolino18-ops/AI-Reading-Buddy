@@ -10,17 +10,42 @@
         <h1 class="text-2xl font-black text-white tracking-tight">Evaluation Complete</h1>
         <p class="text-xs text-slate-400 mt-1">Your answers have been processed against active repository keys.</p>
         
-        <div class="my-6 inline-block bg-black/30 border border-white/5 px-6 py-4 rounded-2xl">
-            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Final Accuracy Score</span>
-            <span class="text-4xl font-black text-indigo-400 block mt-1">{{ $score }} / {{ $total }}</span>
-            <span class="text-xs text-slate-500 block mt-1">({{ $total > 0 ? round(($score / $total) * 100) : 0 }}% Accuracy Matrix)</span>
+        <div class="grid gap-4 md:grid-cols-2 mb-6">
+            <div class="bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-sm">
+                <div class="text-[11px] uppercase tracking-[0.35em] text-slate-400 font-semibold mb-4">Core Mastery</div>
+                <div class="flex items-center gap-3">
+                    <span class="text-5xl font-black text-emerald-400">{{ $score }}</span>
+                    <div>
+                        <div class="text-lg font-bold text-white">/ {{ $total }} Mastered</div>
+                        <p class="text-xs text-slate-500 mt-1">{{ $score === $total ? 'Perfect score — full module mastery' : 'Keep going — every mistake is a learning moment' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-sm">
+                <div class="flex items-center gap-2 text-xs uppercase tracking-[0.35em] text-indigo-300 font-semibold mb-4">
+                    <span>🧠 Learning Resilience</span>
+                </div>
+                <div class="text-xl font-bold text-white">Total Incorrect Attempts Overcome</div>
+                <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 text-indigo-100 text-sm shadow-sm">
+                    <span class="text-indigo-200">🧠</span>
+                    <span>{{ $totalWrongAttempts }} {{ $totalWrongAttempts === 1 ? 'attempt' : 'attempts' }}</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-3">This score reflects how many challenges you turned into progress while completing the quiz.</p>
+            </div>
         </div>
 
-        <div class="flex justify-center gap-3">
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
             <a href="{{ route('modules.show', $moduleId) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
                 Back to Workspace
             </a>
-            <a href="{{ route('dashboard.index') }}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition">
+            <a href="{{ url('/quiz') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+                🧠 Go to Quiz Hub
+            </a>
+            <a href="{{ url('/quiz?module_id=' . $moduleId . '&reset=1') }}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition">
+                🔄 Retake Quiz Arena
+            </a>
+            <a href="{{ route('dashboard') }}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition">
                 Open Word Bank
             </a>
         </div>

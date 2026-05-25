@@ -60,4 +60,21 @@ class ModuleController extends Controller
 
         return redirect()->back()->with('success', 'Reading workspace module processed successfully.');
     }
+
+    public function destroy(Module $module)
+    {
+        try {
+            // 💡 Cascade delete: wipes out all vocabulary words linked to this specific module first
+            $module->savedWords()->delete();
+            
+            // Delete the core module entry
+            $module->delete();
+
+            return redirect()->route('modules.index')->with('success', 'Reading workspace module and related vocabulary successfully purged.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors([
+                'error' => 'An error occurred while deleting the module: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

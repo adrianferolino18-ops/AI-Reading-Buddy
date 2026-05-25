@@ -8,10 +8,14 @@ class SavedWord extends Model
 {
     // Allows fields to pass through safely without blocking database updates
     protected $fillable = [
-        'word', 
-        'definition', 
-        'module_id', 
-        'context'
+        'user_id',
+        'module_id',
+        'word',
+        'definition',
+        'context',
+        'hint_1',
+        'hint_2',
+        'hint_3'
     ];
 
     /**
