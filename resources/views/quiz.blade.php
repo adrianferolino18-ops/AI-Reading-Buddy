@@ -3,7 +3,16 @@
 @section('title', 'Vocabulary Evaluation Review')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-10">
+@php
+    $preFilledAnswers = [];
+    foreach ($savedWords as $wordItem) {
+        $savedAnswer = $savedProgress['answers'][$wordItem->id] ?? '';
+        if ($savedAnswer !== '') {
+            $preFilledAnswers['q_' . $wordItem->id] = true;
+        }
+    }
+@endphp
+<div x-data="{ answers: {{ json_encode($preFilledAnswers) }} }" class="max-w-4xl mx-auto px-4 py-10">
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-extrabold text-white">Contextual Comprehension Evaluation</h1>
@@ -35,9 +44,13 @@
                         if (collect($badPatternsLocal)->contains(function($p) use ($defLower) { return strpos($defLower, $p) !== false; })) {
                             continue;
                         }
+
+                        $savedAnswer = $savedProgress['answers'][$wordItem->id] ?? '';
+                        $savedAttempts = intval($savedProgress['attempts'][$wordItem->id] ?? 0);
+                        $savedIsCorrect = $savedAnswer !== '' && $savedAnswer === $wordItem->definition;
                     @endphp
 
-                    <div x-data="{ selected: '{{ addslashes($savedProgress['answers'][$wordItem->id] ?? '') }}', wrongCount: {{ intval($savedProgress['attempts'][$wordItem->id] ?? 0) }}, locked: false, hint1: false, hint2: false, hint3: false, correct: '{{ addslashes($wordItem->definition) }}', choose(choice) { if (!this.locked) { this.selected = choice; if (choice === this.correct) { this.locked = true; } else { this.wrongCount = Math.min(this.wrongCount + 1, 3); } } } }" x-init="locked = selected === correct" class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-sm">
+                    <div x-data="{ selected: '{{ addslashes($savedAnswer) }}', wrongCount: {{ $savedAttempts }}, locked: {{ $savedIsCorrect ? 'true' : 'false' }}, hint1: false, hint2: false, hint3: false, correct: '{{ addslashes($wordItem->definition) }}', choose(choice) { if (!this.locked) { this.selected = choice; if (choice === this.correct) { this.locked = true; } else { this.wrongCount = Math.min(this.wrongCount + 1, 3); } } } }" x-init="if (selected) { answers['q_{{ $wordItem->id }}'] = true; } locked = selected === correct" class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-sm">
                         <div class="flex items-center justify-between mb-3 gap-3">
                             <div>
                                 <div class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Question {{ $index + 1 }} of {{ $savedWords->count() }}</div>
@@ -94,7 +107,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold tracking-wide uppercase">Submit Completed Answers Evaluation →</button>
+                <button type="submit" :disabled="Object.keys(answers).length < {{ $savedWords->count() }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed">Submit Completed Answers Evaluation →</button>
             </div>
         </form>
     @endif

@@ -186,7 +186,8 @@ class QuizController extends Controller
                 'completed' => false,
             ]]);
 
-            return redirect('/quiz')->with('success', 'Progress saved successfully! You can resume this arena anytime.');
+            return redirect()->route('quiz.index')
+                ->with('success', 'Progress saved successfully! You can resume this arena anytime.');
         }
 
         $savedWords = SavedWord::where('module_id', $moduleId)

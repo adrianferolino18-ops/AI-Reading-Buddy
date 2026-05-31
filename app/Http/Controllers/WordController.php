@@ -157,6 +157,18 @@ class WordController extends Controller
         }
     }
 
+    public function clearModule($moduleId)
+    {
+        SavedWord::where('module_id', $moduleId)->delete();
+        session()->forget('quiz_progress_' . $moduleId);
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', 'All vocabulary terms cleared successfully.');
+    }
+
     public function destroy($id)
     {
         $word = SavedWord::findOrFail($id);

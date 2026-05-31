@@ -17,6 +17,7 @@ Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('
 // Word definition + management
 Route::post('/words/define', [WordController::class, 'defineAndStoreWord'])->name('words.define');
 Route::delete('/words/{id}', [WordController::class, 'destroy'])->name('words.destroy');
+Route::delete('/words/module/{module}', [WordController::class, 'clearModule'])->name('words.clearModule');
 
 // Quiz
 Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');

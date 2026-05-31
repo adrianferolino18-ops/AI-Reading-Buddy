@@ -36,8 +36,38 @@
             @foreach($modules as $module)
                 {{-- Filter to hide empty structural rows --}}
                 @if($module->savedWords->count() > 0)
-                    <div class="bg-slate-900 border border-white/10 rounded-xl overflow-hidden transition shadow-sm">
+                    <div x-data="{ isDeleteModalOpen: false }" class="bg-slate-900 border border-white/10 rounded-xl transition shadow-sm relative">
                         
+                        {{-- Delete Confirmation Modal --}}
+                        <div x-show="isDeleteModalOpen" x-cloak
+                             class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                            <div @click.away="isDeleteModalOpen = false"
+                                 class="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl max-w-md w-full p-6">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-3">🗑️</div>
+                                    <h3 class="text-lg font-bold text-white mb-1">
+                                        Delete module <span class="text-indigo-400">{{ $module->title }}</span>?
+                                    </h3>
+                                    <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+                                        All vocabulary words saved under this module will be permanently removed. This action cannot be undone.
+                                    </p>
+                                    <div class="flex gap-3 justify-center">
+                                        <button @click="
+                                            fetch('{{ route('words.clearModule', $module->id) }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content'),
+                                                    'Accept': 'application/json'
+                                                },
+                                                body: new URLSearchParams({ _method: 'DELETE' })
+                                            }).then(r => { if (r.ok) { isDeleteModalOpen = false; $root.remove(); } });
+                                        " class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition shadow-lg shadow-rose-600/20">Yes, Delete Everything</button>
+                                        <button @click="isDeleteModalOpen = false" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold px-5 py-2.5 rounded-lg transition">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Dropdown Toggle Header --}}
                         <button @click="activeModule = (activeModule === {{ $module->id }} ? null : {{ $module->id }})"
                                 class="w-full flex items-center justify-between p-5 bg-slate-950/40 hover:bg-slate-950/80 transition text-left focus:outline-none">
@@ -48,6 +78,12 @@
                                 <h3 class="text-base font-bold text-white tracking-tight truncate max-w-md">
                                     {{ $module->title }}
                                 </h3>
+                                {{-- Delete Module Button --}}
+                                <span @click.stop="isDeleteModalOpen = true"
+                                      class="cursor-pointer text-slate-500 hover:text-rose-400 transition text-xs p-1.5 rounded-md hover:bg-white/5"
+                                      title="Delete this module and all its words">
+                                    🗑️
+                                </span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <span class="text-xs font-semibold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
